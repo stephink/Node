@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-app.get('/contact', (req, res) => {
+app.get('/concat', (req, res) => {
   const firstname = req.param('firstName');
   const lastname = req.param('lastName');
   if (!firstname || !lastname) res.status(400).send('Add proper values');
@@ -19,11 +19,14 @@ app.get('/contact', (req, res) => {
 
 });
 
-app.post('/contact/new', (req, res) => {
+app.post('/concat/new', (req, res) => {
+  let firstName = req.body.firstName;
+  let lastName = req.body.lastName;
+  if(!firstName || !lastName) res.status(400).send('Add proper values');
   const response = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    fullName: req.body.firstName + ' ' + req.body.secondName,
+    firstName: firstName,
+    lastName: lastName,
+    fullName: firstName + ' ' + lastName,
     message: 'This is a POST call'
   };
   res.send(response)
