@@ -1,37 +1,45 @@
 const express = require('express');
 const app = express();
-const cors = require('cors')
+const cors = require('cors');
+
+const mongo = require('mongodb').MongoClient;
+const url = 'mongodb://127.0.0.1:27017/person';
+const mydb='person';
+const client = new mongo(url);
+const assert = require('assert');
+
 app.use(express.json());
 app.use(cors());
 
-app.get('/concat', (req, res) => {
-  const firstname = req.param('firstName');
-  const lastname = req.param('lastName');
-  if (!firstname || !lastname) res.status(400).send('Add proper values');
-  const responses = [
-    { 
-      firstName: firstname,
-      lastName: lastname,
-      fullName: firstname + ' ' + lastname,
-      message: 'This is a GET call'
-    }
-  ]
-
-  res.send(responses);
-
-});
-
 app.post('/concat/new', (req, res) => {
-  let firstName = req.body.firstName;
-  let lastName = req.body.lastName;
-  if(!firstName || !lastName) res.status(400).send('Add proper values');
-  const response = {
-    firstName: firstName,
-    lastName: lastName,
-    fullName: firstName + ' ' + lastName,
-    message: 'This is a POST call'
-  };
-  res.send(response)
+  var item = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName
+  }
+  client.connect((err,client) => {
+    assert.equal(null, err);
+    const db=client.db(mydb);
+    const col=db.collection('member');
+    col.find(item).toArray((err,result)=>{
+      assert.equal(null,err);
+      if(result.length>0){
+        res.send("already exist");
+      }
+      else{
+        col.insertOne(item, (err, result) => {
+          assert.equal(null, err);
+          console.log(result);
+          
+          res.send(result.ops);
+        })
+        client.close();
+
+      }
+      
+      
+    })
+
+  })  
 });
 
 const port = process.env.PORT || 4444;
